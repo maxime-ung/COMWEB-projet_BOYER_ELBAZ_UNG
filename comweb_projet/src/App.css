@@ -46,5 +46,35 @@
   color: #888;
 }
 
+/* Style général du tableau des notes */
+table {
+  width: 80%;
+  margin: 2rem auto;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8f8f8; /* Fond très clair neutre */
+  color: #222222; /* Texte gris très foncé */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
+thead {
+  background-color: #646cff; /* Bleu React */
+  color: #ffffff; /* Texte blanc dans l'en-tête */
+  text-align: center;
+}
 
+thead th {
+  padding: 1rem;
+  font-size: 1.1em;
+}
+
+tbody td, tbody th {
+  padding: 0.8rem;
+  text-align: center;
+  border-bottom: 1px solid #cccccc; /* Légère séparation */
+}
+
+tbody tr:hover {
+  background-color: #e0e0ff; /* Hover léger bleu pâle */
+}
