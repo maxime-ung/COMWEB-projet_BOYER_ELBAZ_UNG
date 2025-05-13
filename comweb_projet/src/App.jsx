@@ -1,44 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
-import { useEffect } from 'react'
+import { useState } from 'react';
+import reactLogo from './assets/react.svg';
+import './App.css';
 
-function Bouton(props) {
-
-  const action4 = () => {props.action3(props.label)}
-
-
-  return (<button onClick={action4}> {props.label} </button>);
+function Bouton({ label, action3 }) {
+  return (
+    <button onClick={() => action3(label)}> {label} </button>
+  );
 }
 
-function Navbar(props){
-
-  return (<div>
-    <img src={reactLogo} /> <Bouton label="Élève" action3={props.action2}/>  <Bouton label="Professeur" action3={props.action2}/> </div>);
+function Navbar({ action2 }) {
+  return (
+    <div>
+      <img src={reactLogo} alt="Logo React" />
+      <Bouton label="Élève" action3={action2} />
+      <Bouton label="Professeur" action3={action2} />
+    </div>
+  );
 }
 
+function Contenu({ pageActuelle, actionFormulaire }) {
+  const [identifiant, setIdentifiant] = useState('');
+  const [motDePasse, setMotDePasse] = useState('');
 
-function Contenu(props) {
-  if (props.pageActuelle === "Élève") {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (identifiant && motDePasse) {
+      // console.log("Formulaire envoyé avec :", identifiant, motDePasse);
+      actionFormulaire(identifiant, motDePasse);
+    } else {
+      alert('Veuillez remplir tous les champs.');
+    }
+  };
+
+  if (pageActuelle === "Élève") {
     return (
       <div className="page">
         <div className="contenu">
           <h1>Espace Élève</h1>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="champ">
               <label>Identifiant :</label>
-              <input type="text" name="identifiant" required />
+              <input type="text" value={identifiant} onChange={(e) => setIdentifiant(e.target.value)} required />
             </div>
             <div className="champ">
               <label>Mot de passe :</label>
-              <input type="password" name="motDePasse" required />
+              <input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
             </div>
             <button type="submit">Se connecter</button>
           </form>
         </div>
       </div>
     );
-  } else if (props.pageActuelle === "Professeur") {
+  } else if (pageActuelle === "Professeur") {
     return (
       <div className="page">
         <div className="contenu">
@@ -46,7 +59,7 @@ function Contenu(props) {
           <form>
             <div className="champ">
               <label>Mot de passe :</label>
-              <input type="password" name="motDePasse" required />
+              <input type="password" required />
             </div>
             <button type="submit">Se connecter</button>
           </form>
@@ -62,55 +75,56 @@ function Contenu(props) {
   }
 }
 
-
 function App() {
-  const [data,setData]=useState([])
+  const [data, setData] = useState([]);
+  const [page, setPage] = useState("Élève");
 
-  useEffect(()=>{
-    fetch("http://localhost/test.php").then((response)=>response.json()).then((data)=>{
-      setData(data)
-    })
-  },[])
-
-  console.log("data",data)
-
-  const [page,setPage] = useState("élève");
-
-
-  function action1(x){
-    
-    setPage(x);
-    console.log(x);
-  }
-
-  useEffect(() => {document.title= `La page : ${page}`;}, [page]);
+  const fetchFormulaire = (identifiant, motDePasse) => {
+    const url = `http://localhost:8080/api.php?identifiant=${encodeURIComponent(identifiant)}&motDePasse=${encodeURIComponent(motDePasse)}`;
+    console.log("URL envoyée à l'API :", url);
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          setData(data);
+        }
+      })
+      .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur serveur.');
+      });
+  };
 
   return (
     <>
-    <Navbar action2={action1} />
-    <Contenu pageActuelle={page} />
-    <table>
-    <thead>
-              <th>Nom</th>
-              <th>Note</th>
-              <th>Matière</th>
-            </thead>
-            <tbody>
-            {
-         data && data.map((item)=>(
-         
-            <tr key={item.id}> 
-              <th>{item.name}</th>
-              <th>{item.note}</th>
-              <th>{item.subject}</th>
-            
+      <Navbar action2={setPage} />
+      <Contenu pageActuelle={page} actionFormulaire={fetchFormulaire} />
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Note</th>
+            <th>Matière</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.isArray(data) && data.length > 0 ? (
+            data.map((item) => (
+              <tr key={item.id}>
+                <th>{item.name}</th>
+                <th>{item.note}</th>
+                <th>{item.subject}</th>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="3">Aucune donnée à afficher</td>
             </tr>
-            
-        ))
-      }
-            </tbody>
-    </table>
-      
+          )}
+        </tbody>
+      </table>
     </>
   );
 }

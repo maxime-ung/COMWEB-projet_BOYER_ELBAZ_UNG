@@ -1,61 +1,43 @@
 <?php
-// API conforme au cours COMWEB - projet avec 2 bases : eleves et professeurs
+header("Access-Control-Allow-Origin: *");
 
-// Autoriser accès depuis React (CORS)
-header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json; charset=UTF-8');
+// Vérification des paramètres
+if (isset($_GET['identifiant']) && isset($_GET['motDePasse'])) {
 
-// Paramètres communs de connexion
+$identifiant = $_GET['identifiant'];
+$motDePasse = $_GET['motDePasse'];
+
+// Connexion à la base de données
 $host = 'localhost';
+$dbname = 'notes';
 $username = 'root';
 $password = '';
 
-// Vérification que les bons paramètres sont passés dans l'URL
-if (!isset($_GET['action']) || !isset($_GET['name'])) {
-    echo json_encode(['error' => 'Paramètres manquants']);
-    exit();
-}
-
-// Lecture des paramètres GET
-$action = $_GET['action'];
-$name = $_GET['name'];
-
-// Connexion à la base de données selon besoin
 try {
-    if ($action === 'getNotesEleve') {
-        $bdd = new PDO('mysql:host='.$host.';dbname=eleves;charset=utf8', $username, $password);
-    } elseif ($action === 'getInfosProf') {
-        $bdd = new PDO('mysql:host='.$host.';dbname=professeurs;charset=utf8', $username, $password);
-    } else {
-        echo json_encode(['error' => 'Action inconnue']);
-        exit();
-    }
+$bdd = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $username, $password);
 } catch (Exception $e) {
-    die('Erreur : ' . $e->getMessage());
+die(json_encode(['error' => 'Erreur de connexion à la base de données']));
 }
 
-// Exécuter la bonne requête SQL selon l'action
-if ($action === 'getNotesEleve') {
-    $sql = "SELECT subject, note FROM Notes WHERE name = :name";
-    $stmt = $bdd->prepare($sql);
-    $stmt->execute(['name' => $name]);
-    $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Préparation de la requête
+$requete = $bdd->prepare('SELECT * FROM Notes WHERE name = :identifiant AND mdp = :motDePasse');
 
-    echo json_encode($notes);
-    exit();
+// Exécution de la requête
+$requete->execute([
+'identifiant' => $identifiant,
+'motDePasse' => $motDePasse
+]);
+
+// Récupération des résultats
+$resultats = $requete->fetchAll(PDO::FETCH_ASSOC);
+
+if ($resultats) {
+echo json_encode($resultats);
+} else {
+echo json_encode(['error' => 'Identifiant ou mot de passe incorrect']);
 }
 
-if ($action === 'getInfosProf') {
-    $sql = "SELECT prenom, matiere FROM professeurs WHERE nom = :name";
-    $stmt = $bdd->prepare($sql);
-    $stmt->execute(['name' => $name]);
-    $infos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode($infos);
-    exit();
+} else {
+echo json_encode(['error' => 'Paramètres manquants']);
 }
-
-// Si aucune action correcte n'a été reconnue (sécurité supplémentaire)
-echo json_encode(['error' => 'Action non reconnue']);
-exit();
 ?>
