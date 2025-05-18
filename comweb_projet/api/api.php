@@ -6,16 +6,16 @@ $identifiant = $_GET['identifiant'] ?? null;
 $motDePasse = $_GET['motDePasse'] ?? null;
 
 // Connexion à la base de données version full localhost
-$host = 'localhost';
+/*$host = 'localhost';
 $dbname = 'notes';
 $username = 'root';
-$password = '';
+$password = '';*/
 
 // Connexion à la base de données version zzz
-/*$host = 'localhost';
+$host = 'localhost';
 $dbname = 'mung001';
 $username = 'mung001';
-$password = 'sibdd@B_INP27';*/
+$password = 'sibdd@B_INP27';
 
 try 
     {$bdd = new PDO('mysql:host=' . $host . ';dbname=' . $dbname . ';charset=utf8', $username, $password);} 
