@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import reactLogo from './assets/react.svg';
 import './App.css';
 
-// Composant Bouton : Affiche un bouton qui appelle une action lorsqu'on clique dessus
+// Composant Bouton
 function Bouton(props) 
 {
   const action4 = () => {props.action3(props.label);}; // Appelle la fonction passée en props avec le label (Élève ou Professeur)
   return (<button onClick={action4}>{props.label}</button>);
 }
 
-// Composant Navbar : Barre de navigation contenant le logo et les boutons Élève et Professeur
+// Composant Navbar
 function Navbar(props) 
 {
   return (
@@ -28,18 +28,18 @@ function Contenu(props) {
 
   const soumissionFormulaire = (event) => {
     event.preventDefault(); // Empêche le rechargement complet de la page
-    if (identifiant && motDePasse) {
-      props.actionFormulaire(identifiant, motDePasse); // Envoie les identifiants au serveur
-    } else {
-      alert('Veuillez remplir tous les champs.');
-    }
+    if ((props.pageActuelle === "Eleve" && identifiant && motDePasse) || 
+        (props.pageActuelle === "Professeur" && motDePasse))
+          {props.actionFormulaire(identifiant, motDePasse);} // Envoie les identifiants au serveur
+    else 
+      {alert('Veuillez remplir tous les champs.');}
   };
 
   if (props.pageActuelle === "Eleve") {
     return (
       <div className="page">
         <div className="contenu">
-          <h1>Espace Elève</h1>
+          <h1>Espace Élève</h1>
           <form onSubmit={soumissionFormulaire}>
             <div className="champ">
               <label>Identifiant :</label>
@@ -61,10 +61,10 @@ function Contenu(props) {
         <div className="page">
           <div className="contenu">
             <h1>Espace Professeur</h1>
-            <form>
+            <form onSubmit={soumissionFormulaire}>
               <div className="champ">
                 <label>Mot de passe :</label>
-                <input type="password" name="motDePasse" required />
+                <input type="password" value={motDePasse} onChange={(event) => setMotDePasse(event.target.value)} required />
               </div>
               <button type="submit">Se connecter</button>
             </form>
@@ -88,7 +88,7 @@ function App() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState("Eleve");
 
-  // Fonction pour changer de pag
+  // Fonction pour changer de page
   function action1(x) 
   {
     setPage(x);
@@ -97,24 +97,31 @@ function App() {
   // Met à jour le titre de la page quand "page" change
   useEffect(() => {document.title = `La page : ${page}`;}, [page]);
 
+
    // Fonction pour envoyer les identifiants à l'API et récupérer les données
-  const fetchFormulaire = (identifiant, motDePasse) => {
-    const url = `http://localhost:8080/api.php?identifiant=${encodeURIComponent(identifiant)}&motDePasse=${encodeURIComponent(motDePasse)}`;
-    console.log("URL envoyée à l'API :", url);
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          alert(data.error);
-        } else {
-          setData(data);
-        }
-      })
-      .catch(error => {
-        console.error('Erreur:', error);
-        alert('Erreur serveur.');
-      });
-  };
+    const fetchFormulaire = (identifiant, motDePasse) => {
+      
+      //let url = "http://localhost:8080/api.php"; // Interrogation API localhost
+      let url = "https://mung001.zzz.bordeaux-inp.fr/api.php"; // Interrogation API zzz
+      if (page === "Eleve") 
+        {url += `?identifiant=${encodeURIComponent(identifiant)}&motDePasse=${encodeURIComponent(motDePasse)}`;} 
+      else if (page === "Professeur") 
+        {url += `?motDePasse=${encodeURIComponent(motDePasse)}`;} // pas d’identifiant pour le prof
+ 
+      console.log("URL envoyée à l'API :", url);
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) 
+            {alert(data.error);} 
+          else 
+          {setData(data);}
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          alert('Erreur serveur.');
+        });
+    };
 
   return (
     <>
