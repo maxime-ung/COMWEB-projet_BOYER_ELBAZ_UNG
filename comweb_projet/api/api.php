@@ -49,5 +49,5 @@ elseif ($identifiant && $motDePasse)
 } 
 
 else 
-    {echo json_encode(['error' => 'Paramètres manquants']);}
+    {echo json_encode(['error' => 'Identifiant ou mot de passe incorrect']);}
 ?>

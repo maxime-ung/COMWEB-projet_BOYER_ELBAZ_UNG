@@ -14,15 +14,26 @@ function Navbar(props)
 {
   return (
     <div>
-      <img src={reactLogo} alt="Logo React" />
-      <Bouton label="Eleve" action3={props.action2} />
-      <Bouton label="Professeur" action3={props.action2} />
+      <img
+        src="https://static.vecteezy.com/ti/vecteur-libre/p1/14861990-creation-de-logo-sp-initiale-sp-lettre-logo-design-monogramme-vector-design-pro-vecteur-vectoriel.jpg"
+        alt="Logo SuperPronote"  
+        width="200"                    
+        height="auto"                      
+      />
+      <div>
+        <Bouton label="Eleve" action3={props.action2} />
+        <Bouton label="Professeur" action3={props.action2} />
+      </div>
     </div>
   );
 }
 
 // Composant Contenu : Affiche le formulaire selon la page actuelle (Élève ou Professeur)
 function Contenu(props) {
+
+  if (!["Eleve", "Professeur"].includes(props.pageActuelle)) 
+    {return null;}
+
   const [identifiant, setIdentifiant] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
 
@@ -35,7 +46,9 @@ function Contenu(props) {
       {alert('Veuillez remplir tous les champs.');}
   };
 
-  if (props.pageActuelle === "Eleve") {
+
+  if (props.pageActuelle === "Eleve") 
+  {
     return (
       <div className="page">
         <div className="contenu">
@@ -86,13 +99,14 @@ function Contenu(props) {
 // Composant principal App
 function App() {
   const [data, setData] = useState([]);
-  const [page, setPage] = useState("Eleve");
+  const [page, setPage] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {setMessage("Bienvenue sur SuperPronote");}, []);
 
   // Fonction pour changer de page
   function action1(x) 
-  {
-    setPage(x);
-  }
+    {setPage(x);}
 
   // Met à jour le titre de la page quand "page" change
   useEffect(() => {document.title = `La page : ${page}`;}, [page]);
@@ -126,7 +140,9 @@ function App() {
   return (
     <>
       <Navbar action2={action1} />
+      {page === "" && <h1>{message}</h1>}
       <Contenu pageActuelle={page} actionFormulaire={fetchFormulaire} />
+      { ["Eleve", "Professeur"].includes(page) && (
       <table>
         <thead>
           <tr>
@@ -151,6 +167,7 @@ function App() {
           )}
         </tbody>
       </table>
+      )}
     </>
   );
 }
